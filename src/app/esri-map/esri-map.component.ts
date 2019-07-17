@@ -69,7 +69,6 @@ export class EsriMapComponent implements OnInit {
     console.log(basemap);
   }
   get basemap(): string {
-    console.log(this._basemap);
     return this._basemap;
   }
 
@@ -80,31 +79,55 @@ export class EsriMapComponent implements OnInit {
       // this.basemap = 'streets';
       console.log(this.basemap);
       // Load the modules for the ArcGIS API for JavaScript
-      const [EsriMap, EsriMapView, FeatureLayer] = await loadModules(['esri/Map', 'esri/views/MapView', 'esri/layers/FeatureLayer']);
+      const [EsriMap, EsriMapView, GraphicsLayer, Graphic] = await loadModules(['esri/Map', 'esri/views/MapView', 'esri/layers/GraphicsLayer', 'esri/Graphic']);
 
       // Configure the Map
       const mapProperties: esri.MapProperties = {
         basemap: this.basemap
       };
-      const trailheadsLayer = new FeatureLayer({
-        url: 'https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trailheads/FeatureServer/0'
-      });
 
       const map: esri.Map = new EsriMap(mapProperties);
-      map.add(trailheadsLayer);
-      // Trails feature layer (lines)
-      const trailsLayer = new FeatureLayer({
-        url: 'https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Trails/FeatureServer/0'
+
+      // create image layers
+
+      // Graphics layer property
+      const imageTest = new Graphic({
+        attributes: {
+          name: 'image test'
+        },
+        geometry: {
+          type: 'point', // autocasts as new Point()
+          longitude: 54,
+          latitude: 24
+        },
+        symbol: {
+          type: 'picture-marker',
+          // tslint:disable-next-line: max-line-length
+          url: 'https://sampleserver6.arcgisonline.com/arcgis/rest/services/Recreation/FeatureServer/0/images/e82f744ebb069bb35b234b3fea46deae'
+        },
+        popupTemplate: {
+          // autocasts as new PopupTemplate()
+          title: 'this title',
+          content: [
+            {
+              type: 'fields',
+              fieldInfos: [
+                {
+                  fieldName: 'name',
+                  label: 'Name',
+                  visible: true
+                }
+              ]
+            }
+          ]
+        }
       });
 
-      map.add(trailsLayer, 0);
-
-      // Parks and open spaces (polygons)
-      const parksLayer = new FeatureLayer({
-        url: 'https://services3.arcgis.com/GVgbJbqm8hXASVYi/arcgis/rest/services/Parks_and_Open_Space/FeatureServer/0'
+      const facilityLocationIcon = new GraphicsLayer({
+        graphics: [imageTest]
       });
 
-      map.add(parksLayer, 0);
+      map.layers.add(facilityLocationIcon);
 
       // Initialize the MapView
       const mapViewProperties: esri.MapViewProperties = {
